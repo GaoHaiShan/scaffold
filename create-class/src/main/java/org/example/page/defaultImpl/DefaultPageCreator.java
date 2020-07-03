@@ -13,16 +13,16 @@ public class DefaultPageCreator implements IPageCreator {
 
     private String basePath;
 
-    public DefaultPageCreator(String basePath){
+    public DefaultPageCreator(String basePath) {
         this.basePath = basePath;
     }
 
     @Override
     public void create(String... className) {
-        ((ControllerPageCreator)ControllerPageFactory.getInstance()
+        ((ControllerPageCreator) ControllerPageFactory.getInstance()
                 .getObject(basePath))
                 .create(className);
-        ((ServicePageCreator)ServicePageFactory.getInstance()
+        ((ServicePageCreator) ServicePageFactory.getInstance()
                 .getObject(basePath))
                 .create(className);
         ((DaoPageCreator) DaoPageFactory.getInstance()

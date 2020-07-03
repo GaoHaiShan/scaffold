@@ -14,13 +14,13 @@ public class ClassDefinition {
     //是否需要dubbo
     private boolean isHashDubbo = false;
     //是否开启事务
-    private boolean OpenTransaction=true;
+    private boolean OpenTransaction = true;
     private String dataBase;
     private String dataBaseUserName;
     private String dataBasePassWord;
 
-    private String redisHost="127.0.0.1";
-    private String redisPort="6379";
+    private String redisHost = "127.0.0.1";
+    private String redisPort = "6379";
     //表名对应
     private String tableName;
     //主键
@@ -36,6 +36,7 @@ public class ClassDefinition {
     public void setPrimaryKey(String primaryKey) {
         this.primaryKey = primaryKey;
     }
+
     public String getPageName() {
         return pageName;
     }

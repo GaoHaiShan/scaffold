@@ -7,13 +7,13 @@ public class ControllerPageFactory extends PageFactoryBean {
 
     private ControllerPageCreator creator;
 
-    public static ControllerPageFactory getInstance(){
+    public static ControllerPageFactory getInstance() {
         return controllerPageFactory;
     }
 
     @Override
     protected Object createObject() {
-        if(creator==null||!super.isStatus()) {
+        if (creator == null || !super.isStatus()) {
             creator = new ControllerPageCreator(super.getBasePath());
             super.setStatus(false);
         }

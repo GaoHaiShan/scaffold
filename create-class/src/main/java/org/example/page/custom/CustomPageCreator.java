@@ -15,8 +15,8 @@ public class CustomPageCreator implements IPageCreator {
     @Override
     public void create(String... className) {
         for (String name : className) {
-            File file = new File((basePath+"/"+name).replaceAll("/+","/"));
-            if (!file.exists()){
+            File file = new File((basePath + "/" + name).replaceAll("/+", "/"));
+            if (!file.exists()) {
                 file.mkdirs();
             }
         }

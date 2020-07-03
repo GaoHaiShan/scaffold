@@ -7,14 +7,15 @@ import java.io.IOException;
 
 public class YmlConfigClassCreator extends AbstartClassCreator {
     private String path;
+
     @Override
     protected File createJavaFile(String basePath, String className) {
         this.path = basePath;
-        basePath = basePath.replaceAll("java.*","");
+        basePath = basePath.replaceAll("java.*", "");
         basePath += "resources/";
         File file = null;
         try {
-            file = createJavaFile(basePath,"","application",".yml");
+            file = createJavaFile(basePath, "", "application", ".yml");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -36,15 +37,15 @@ public class YmlConfigClassCreator extends AbstartClassCreator {
                 "  config-location: classpath:mybatis.xml\n" +
                 "spring:\n" +
                 "  application:\n" +
-                "    name: "+getThisClassDefinition().getApplicationName()+"\n" +
+                "    name: " + getThisClassDefinition().getApplicationName() + "\n" +
                 "  sleuth:\n" +
                 "    rxjava:\n" +
                 "      schedulers:\n" +
                 "        hook:\n" +
                 "          enabled: true\n" +
                 "  redis:\n" +
-                "    host: "+getThisClassDefinition().getRedisHost()+"\n" +
-                "    port: "+getThisClassDefinition().getRedisPort()+"\n" +
+                "    host: " + getThisClassDefinition().getRedisHost() + "\n" +
+                "    port: " + getThisClassDefinition().getRedisPort() + "\n" +
                 "#    password: pAssw0r_d\n" +
                 "\n" +
                 "  jpa:\n" +
@@ -54,9 +55,9 @@ public class YmlConfigClassCreator extends AbstartClassCreator {
                 "        format_sql: true\n" +
                 "  datasource:\n" +
                 "    driver-class-name: com.mysql.cj.jdbc.Driver\n" +
-                "    url: jdbc:mysql://127.0.0.1:3306/"+getThisClassDefinition().getDataBase()+"?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false\n" +
-                "    username: "+getThisClassDefinition().getDataBaseUserName()+"\n" +
-                "    password: "+getThisClassDefinition().getDataBasePassWord()+"\n" +
+                "    url: jdbc:mysql://127.0.0.1:3306/" + getThisClassDefinition().getDataBase() + "?serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false\n" +
+                "    username: " + getThisClassDefinition().getDataBaseUserName() + "\n" +
+                "    password: " + getThisClassDefinition().getDataBasePassWord() + "\n" +
                 "    druid:\n" +
                 "      stat-view-servlet:\n" +
                 "        enabled: false\n" +
@@ -166,6 +167,6 @@ public class YmlConfigClassCreator extends AbstartClassCreator {
 
     @Override
     protected void restEditCode(File file, String url, StringBuffer sb, String className, String page) {
-        deflauteEditCode(file,url,sb,className,page);
+        deflauteEditCode(file, url, sb, className, page);
     }
 }

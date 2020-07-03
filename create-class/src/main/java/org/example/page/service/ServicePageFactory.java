@@ -7,13 +7,13 @@ public class ServicePageFactory extends PageFactoryBean {
 
     private ServicePageCreator creator;
 
-    public static ServicePageFactory getInstance(){
+    public static ServicePageFactory getInstance() {
         return servicePageFactory;
     }
 
     @Override
     protected Object createObject() {
-        if(creator==null||!super.isStatus()) {
+        if (creator == null || !super.isStatus()) {
             creator = new ServicePageCreator(super.getBasePath());
             super.setStatus(false);
         }

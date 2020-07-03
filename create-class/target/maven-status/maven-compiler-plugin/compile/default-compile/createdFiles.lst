@@ -1,4 +1,6 @@
+org\example\clazz\create\creator\JsonUtilClassCreator.class
 org\example\AbstartFactoryBean.class
+org\example\clazz\create\creator\BaseDaoClassCreator.class
 org\example\page\custom\CustomPageCreator.class
 org\example\page\service\ServicePageCreator.class
 org\example\page\dao\DaoPageCreator.class
@@ -14,6 +16,7 @@ org\example\clazz\create\creator\FileUtilClassCreator.class
 org\example\clazz\reader\IReader.class
 org\example\clazz\create\updateconfig\UpdatePom.class
 org\example\quickStart\QuickStartFactory.class
+org\example\clazz\create\updateconfig\UpdateApplication.class
 org\example\clazz\create\creator\ServiceImplClassCreator.class
 org\example\page\custom\CustomPageFactory.class
 org\example\clazz\create\creator\ControllerClassCreator.class

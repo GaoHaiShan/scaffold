@@ -13,8 +13,8 @@ public class DaoPageCreator implements IPageCreator {
 
     @Override
     public void create(String... className) {
-        File dao = new File(basePath+"/dao");
-        if(!dao.exists()){
+        File dao = new File(basePath + "/dao");
+        if (!dao.exists()) {
             dao.mkdirs();
         }
     }

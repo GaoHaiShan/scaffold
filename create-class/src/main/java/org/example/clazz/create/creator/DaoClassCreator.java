@@ -12,7 +12,7 @@ public class DaoClassCreator extends AbstartClassCreator implements Runnable {
     protected File createJavaFile(String basePath, String className) {
         File file = null;
         try {
-            file = createJavaFile(basePath,className,"/dao/I","Dao.java");
+            file = createJavaFile(basePath, className, "/dao/I", "Dao.java");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -21,7 +21,7 @@ public class DaoClassCreator extends AbstartClassCreator implements Runnable {
 
     @Override
     protected String getPackage(String basePath) {
-        return getPackage(basePath,"dao");
+        return getPackage(basePath, "dao");
     }
 
     @Override
@@ -32,18 +32,13 @@ public class DaoClassCreator extends AbstartClassCreator implements Runnable {
                 "import java.util.List;\n" +
                 "import java.util.Map;\n\n");
         sb.append("@Mapper\n");
-        sb.append("public interface I"+className+"Dao {\n\n");
-        sb.append("\tList<Map> query"+className+"(@Param(\"param\") Map param);\n\n");
-        sb.append("\tint update"+className+"ByCondition(@Param(\"tableName\") String tableName,@Param(\"condition\") Map condition,@Param(\"value\") Map value);\n\n");
-        sb.append("\tint update"+className+"ByKey(@Param(\"tableName\") String tableName,@Param(\"value\") Map value);\n\n");
-        sb.append("\tint add"+className+"One(@Param(\"tableName\") String tableName,@Param(\"value\") Map value);\n\n");
-        sb.append("\tint add"+className+"List(@Param(\"tableName\") String tableName,@Param(\"value\") List<Map> value);\n\n");
-        sb.append("\tint delete"+className+"(@Param(\"param\") Map param);\n\n");
-        sb.append("}");
+        sb.append("public interface I" + className + "Dao {\n\n");
+        sb.append("List<Map> query" + className + "(@Param(\"param\") Map param);");
+       sb.append("}");
     }
 
     @Override
     protected void restEditCode(File file, String url, StringBuffer sb, String className, String page) {
-        deflauteEditCode(file,url,sb,className,page);
+        deflauteEditCode(file, url, sb, className, page);
     }
 }

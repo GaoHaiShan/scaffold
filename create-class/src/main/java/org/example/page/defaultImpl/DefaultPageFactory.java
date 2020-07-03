@@ -8,13 +8,13 @@ public class DefaultPageFactory extends PageFactoryBean {
 
     private DefaultPageCreator creator;
 
-    public static DefaultPageFactory getInstance(){
+    public static DefaultPageFactory getInstance() {
         return defaultPageFactory;
     }
 
     @Override
     protected Object createObject() {
-        if(creator==null||!super.isStatus()) {
+        if (creator == null || !super.isStatus()) {
             creator = new DefaultPageCreator(super.getBasePath());
             super.setStatus(false);
         }

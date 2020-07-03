@@ -8,13 +8,13 @@ public class DaoPageFactory extends PageFactoryBean {
 
     private DaoPageCreator creator;
 
-    public static DaoPageFactory getInstance(){
+    public static DaoPageFactory getInstance() {
         return daoPageFactory;
     }
 
     @Override
     protected Object createObject() {
-        if(creator==null||!super.isStatus()) {
+        if (creator == null || !super.isStatus()) {
             creator = new DaoPageCreator(super.getBasePath());
             super.setStatus(false);
         }

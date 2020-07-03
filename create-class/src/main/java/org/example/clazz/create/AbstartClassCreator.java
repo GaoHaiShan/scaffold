@@ -10,38 +10,33 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 
-public abstract class AbstartClassCreator implements IClassCreator,Runnable {
+public abstract class AbstartClassCreator implements IClassCreator {
 
 
-    private List<ClassDefinition> definitions;
-    private ExecutorService service;
     private IClassCreator classCreator;
 
     private ClassDefinition thisClassDefinition;
+
     @Override
     public void create(String... className) {
-        service.execute(this);
-        if (classCreator!=null) {
+        run();
+        if (classCreator != null) {
             classCreator.create();
         }
 
     }
 
-    @Override
+
     public void run() {
         loadDefinitions();
     }
 
 
     @Override
-    public void setDefinition(List<ClassDefinition> definitions) {
-        this.definitions = definitions;
+    public void setDefinition(ClassDefinition definitions) {
+        this.thisClassDefinition = definitions;
     }
 
-    @Override
-    public void setExecutorService(ExecutorService service) {
-        this.service = service;
-    }
 
     @Override
     public void setIClassCreator(IClassCreator classCreator) {
@@ -49,13 +44,13 @@ public abstract class AbstartClassCreator implements IClassCreator,Runnable {
     }
 
 
-    protected File createJavaFile(String basePath,String className,String per,String fix) throws IOException {
+    protected File createJavaFile(String basePath, String className, String per, String fix) throws IOException {
         File file = new File(basePath + per + className + fix);
-        if(!file.exists()){
+        if (!file.exists()) {
             file.createNewFile();
-        }else {
+        } else {
             try {
-                throw new Exception("File creation failed : "+ className + fix +" is early create.");
+                throw new Exception("File creation failed : " + className + fix + " is early create.");
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -64,28 +59,22 @@ public abstract class AbstartClassCreator implements IClassCreator,Runnable {
     }
 
     protected void loadDefinitions() {
-        for (ClassDefinition definition : definitions) {
-            if(null == definition.getUrl()|| "".equals(definition.getUrl()))
-                continue;
-            File file = createJavaFile(definition.getBasePath(),definition.getClassName());
-            this.thisClassDefinition = definition;
-            editCode(file,definition);
-
-        }
+        File file = createJavaFile(thisClassDefinition.getBasePath(), thisClassDefinition.getClassName());
+        editCode(file, thisClassDefinition);
     }
 
-    private void editCode(File file,ClassDefinition definition) {
+    private void editCode(File file, ClassDefinition definition) {
         StringBuffer sb = new StringBuffer();
         String page = getPackage(definition.getBasePath());
         sb.append(page);
-        if(definition.isRest()){
-            restEditCode(file,definition.getUrl(),sb,definition.getClassName(),page);
-        }else {
-            deflauteEditCode(file,definition.getUrl(),sb,definition.getClassName(),page);
+        if (definition.isRest()) {
+            restEditCode(file, definition.getUrl(), sb, definition.getClassName(), page);
+        } else {
+            deflauteEditCode(file, definition.getUrl(), sb, definition.getClassName(), page);
         }
         try (
                 FileOutputStream fo = new FileOutputStream(file);
-        ){
+        ) {
             fo.write(sb.toString().getBytes());
             fo.flush();
         } catch (Exception e) {
@@ -93,20 +82,20 @@ public abstract class AbstartClassCreator implements IClassCreator,Runnable {
         }
     }
 
-    protected String getPackage(String basePath,String pageName) {
-        String formatPath = basePath.replaceAll("/+","/");
-        if(formatPath.charAt(0)=='/')
+    protected String getPackage(String basePath, String pageName) {
+        String formatPath = basePath.replaceAll("/+", "/");
+        if (formatPath.charAt(0) == '/')
             formatPath = formatPath.substring(1);
         String[] arr = formatPath.split("/");
         boolean f = false;
         StringBuffer sb = new StringBuffer();
         sb.append("package ");
         for (String s : arr) {
-            if(s.equals("java"))
+            if (s.equals("java"))
                 f = true;
-            if(f){
+            if (f) {
                 sb.append(s);
-                if (!s.equals(arr.length-1)){
+                if (!s.equals(arr.length - 1)) {
                     sb.append(".");
                 }
             }
@@ -114,7 +103,7 @@ public abstract class AbstartClassCreator implements IClassCreator,Runnable {
 
         sb.append(pageName);
         sb.append(";");
-        return sb.toString().replaceAll("java\\.","");
+        return sb.toString().replaceAll("java\\.", "");
     }
 
     public ClassDefinition getThisClassDefinition() {

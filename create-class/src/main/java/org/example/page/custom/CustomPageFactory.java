@@ -8,13 +8,13 @@ public class CustomPageFactory extends PageFactoryBean {
 
     private CustomPageCreator creator;
 
-    public static CustomPageFactory getInstance(){
+    public static CustomPageFactory getInstance() {
         return customPageFactory;
     }
 
     @Override
     protected Object createObject() {
-        if(creator==null||!super.isStatus()) {
+        if (creator == null || !super.isStatus()) {
             creator = new CustomPageCreator(super.getBasePath());
             super.setStatus(false);
         }

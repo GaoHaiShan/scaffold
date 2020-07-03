@@ -16,7 +16,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
 
     private void createClass() {
         String code = getCode2();
-        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(getBasePath()+"/CreateClassStart.java"))){
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(getBasePath() + "/CreateClassStart.java"))) {
             fileOutputStream.write(code.getBytes());
             fileOutputStream.flush();
         } catch (Exception e) {
@@ -26,7 +26,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
 
     private void createPage() {
         String code = getCode();
-        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(getBasePath()+"/CreatePageStart.java"))){
+        try (FileOutputStream fileOutputStream = new FileOutputStream(new File(getBasePath() + "/CreatePageStart.java"))) {
             fileOutputStream.write(code.getBytes());
             fileOutputStream.flush();
         } catch (Exception e) {
@@ -37,7 +37,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
     private String getCode() {
         StringBuffer code = new StringBuffer();
         code.append("package ");
-        code.append(getBasePath().split("/java/")[1].replaceAll("/","\\."));
+        code.append(getBasePath().split("/java/")[1].replaceAll("/", "\\."));
         code.append(";\n");
         code.append("\nimport org.example.page.custom.CustomPageCreator;\n" +
                 "import org.example.page.custom.CustomPageFactory;\n" +
@@ -61,12 +61,13 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "}\n");
         return code.toString();
     }
+
     private String getCode2() {
         StringBuffer code = new StringBuffer();
         code.append("package ");
-        code.append(getBasePath().replaceAll(".*/java/","")
-                .replaceAll("/+","/")
-                .replaceAll("/","\\."));
+        code.append(getBasePath().replaceAll(".*/java/", "")
+                .replaceAll("/+", "/")
+                .replaceAll("/", "\\."));
         code.append(";\n");
         code.append("\nimport org.example.AbstartFactoryBean;\n" +
                 "import org.example.clazz.create.DefaultClassFactoryBean;\n" +
@@ -77,31 +78,32 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "        //创建类\n" +
                 "        AbstartFactoryBean factoryBean = new DefaultClassFactoryBean();\n" +
                 "        factoryBean.isFirst(true);\n" +
-                "        factoryBean.getObject(CreateClassStart.class.getClassLoader().getResource(\"\").getPath()\n" +
+                "        factoryBean.getObject(\""+getFilePath()+"\",CreateClassStart.class.getClassLoader().getResource(\"\").getPath()\n" +
                 "                .replaceAll(\"java.*\",\"resources\")+\"/createclass.properties\");\n" +
                 "    }\n" +
                 "}");
         return code.toString();
     }
-    void creatConfig(){
+
+    void creatConfig() {
         //创建配置文件
         String code = getCode1();
         try (
                 FileOutputStream o = new FileOutputStream(
                         new File(
                                 getBasePath()
-                                        .replaceAll("java.*","resources")
-                                        +"/createclass.properties"
+                                        .replaceAll("java.*", "resources")
+                                        + "/createclass.properties"
                         )
                 )
-        ){
+        ) {
             o.write(code.getBytes());
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private  String getCode1() {
+    private String getCode1() {
         String code = "#类名称\n" +
                 "package.className=\n" +
                 "#应用名称\n" +
@@ -109,7 +111,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "#数据库名称\n" +
                 "package.dataBase=\n" +
                 "#原始路径\n" +
-                "package.basePath="+getBasePath()+"\n" +
+                "package.basePath=" + getBasePath() + "\n" +
                 "#表名\n" +
                 "package.tableName=\n" +
                 "package.primaryKey=\n" +

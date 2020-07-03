@@ -8,7 +8,7 @@ public abstract class PageFactoryBean extends AbstartFactoryBean {
 
     @Override
     protected Object getObject(boolean first) {
-        if(getBasePath().equals(basePath)){
+        if (getBasePath().equals(basePath)) {
             status = true;
         }
         return createObject();

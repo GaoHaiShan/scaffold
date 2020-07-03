@@ -11,7 +11,7 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
     protected File createJavaFile(String basePath, String className) {
         File file = null;
         try {
-            file = createJavaFile(basePath,"InsertAndUpdate","/interceptor/","Interceptor.java");
+            file = createJavaFile(basePath, "InsertAndUpdate", "/interceptor/", "Interceptor.java");
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -20,12 +20,15 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
 
     @Override
     protected String getPackage(String basePath) {
-        return getPackage(basePath,"interceptor");
+        return getPackage(basePath, "interceptor");
     }
 
     @Override
     protected void deflauteEditCode(File file, String url, StringBuffer sb, String className, String page) {
-        sb.append("\n" ).append(
+        sb.append("\n").append(
+                "\n" ).append(
+                "import com.primeton.eos.Application;\n" ).append(
+                "import com.primeton.eos.util.SpringProps;\n" ).append(
                 "import org.apache.ibatis.builder.StaticSqlSource;\n" ).append(
                 "import org.apache.ibatis.executor.Executor;\n" ).append(
                 "import org.apache.ibatis.mapping.BoundSql;\n" ).append(
@@ -43,7 +46,10 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "})\n" ).append(
                 "public class InsertAndUpdateInterceptor implements Interceptor {\n" ).append(
                 "\n" ).append(
-                "    static final ConcurrentHashMap<String, Map<String, String>> TABLEPOOL = new ConcurrentHashMap<>();\n" ).append(
+                "    private Object lock = new Object();\n" ).append(
+                "    private static volatile SpringProps springProps = null;\n" ).append(
+                "\n" ).append(
+                "    public static final ConcurrentHashMap<String, Map<String, String>> TABLEPOOL = new ConcurrentHashMap<>();\n" ).append(
                 "\n" ).append(
                 "    @Override\n" ).append(
                 "    public Object intercept(Invocation invocation) throws Throwable {\n" ).append(
@@ -62,12 +68,20 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "        return o;\n" ).append(
                 "    }\n" ).append(
                 "\n" ).append(
+                "    /**\n" ).append(
+                "     *  进行请求处理\n" ).append(
+                "     * @param invocation mybatis原生   sql执行器\n" ).append(
+                "     * @param param mybatis原生 方法参数\n" ).append(
+                "     * @param ms  mybatis原生 配置\n" ).append(
+                "     * @return 查询结果\n" ).append(
+                "     * @throws Exception 异常\n" ).append(
+                "     */\n" ).append(
                 "    private Object resetInvocation(Invocation invocation, Map param,MappedStatement ms) throws Exception {\n" ).append(
                 "        if (!param.containsKey(\"tableName\")){\n" ).append(
-                "            throw new Exception(\"not found tableName\");\n").append(
+                "            throw new Exception(\"not found tableName\");\n" ).append(
                 "        }\n" ).append(
                 "        String tableName = param.get(\"tableName\").toString();\n" ).append(
-                "\n").append(
+                "\n" ).append(
                 "        Map<String,String> field ;\n" ).append(
                 "        if (TABLEPOOL.containsKey(tableName)){\n" ).append(
                 "            field = TABLEPOOL.get(tableName);\n" ).append(
@@ -82,22 +96,84 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "        if (\"UPDATE\".equals(ms.getSqlCommandType().name())){\n" ).append(
                 "            o = update(tableName,invocation,ms,param,field);\n" ).append(
                 "        }\n" ).append(
+                "        if (\"DELETE\".equals(ms.getSqlCommandType().name())){\n" ).append(
+                "            o = delete(tableName,invocation,ms,param,field);\n" ).append(
+                "        }\n" ).append(
                 "        return o;\n" ).append(
                 "    }\n" ).append(
                 "\n" ).append(
-                "    private Object insert(String tableName, Invocation invocation, MappedStatement ms, Map<String,Object> map,\n").append(
+                "    private Object delete(String tableName, Invocation invocation, MappedStatement ms, Map<String,Object> map,\n" ).append(
                 "                          Map<String,String> field) throws Exception {\n" ).append(
                 "        SqlSource sqlSource =ms.getSqlSource();\n" ).append(
                 "        String sql;\n" ).append(
-                "        if (map.get(\"value\").getClass() == List.class\n" ).append(
-                "                    ||map.get(\"value\").getClass() == ArrayList.class\n" ).append(
-                "                    ||map.get(\"value\").getClass() == LinkedList.class){\n" ).append(
+                "        if (map.containsKey(\"key\")){\n" ).append(
+                "           String key =  map.get(\"key\").toString();\n" ).append(
+                "           sql = getDeleteSql(tableName,key,field);\n" ).append(
+                "        }else if (map.containsKey(\"condition\")){\n" ).append(
+                "            Map<String,Object> condition = (Map<String,Object>) map.get(\"condition\");\n" ).append(
+                "            sql = getDeleteSql(tableName,condition,field);\n" ).append(
+                "        }else {\n" ).append(
+                "            throw new Exception(\"not found sql and not found Primary Key and not found Condition:\\n\"\n" ).append(
+                "                    +\"you can coding sql or add param in baseDao delete method\");\n" ).append(
+                "        }\n" ).append(
+                "        SqlSource sqlSource1 = new StaticSqlSource(ms.getConfiguration(), sql, null);\n" ).append(
+                "        System.out.println(\"\\n\"+sql+\"\\n\");\n" ).append(
+                "        Field classField = MappedStatement.class.getDeclaredField(\"sqlSource\");\n" ).append(
+                "        classField.setAccessible(true);\n" ).append(
+                "        classField.set(ms, sqlSource1);\n" ).append(
+                "        Object res =  invocation.proceed();\n" ).append(
+                "        classField.set(ms,sqlSource);\n" ).append(
+                "        return res;\n" ).append(
+                "    }\n" ).append(
+                "\n" ).append(
+                "    private String getDeleteSql(String tableName, String key, Map<String, String> field) {\n" ).append(
+                "        String sql = \"DELETE FROM \" + tableName + \" WHERE 1 = 1 \";\n" ).append(
+                "        String keyName = field.get(\"key\");\n" ).append(
+                "        if(\"varchar\".equals(keyName)\n" ).append(
+                "                ||\"date\".equals(keyName)\n" ).append(
+                "                || \"datetime\".equals(keyName)\n" ).append(
+                "                || \"char\".equals(keyName)\n" ).append(
+                "                ||\"text\".equals(keyName)\n" ).append(
+                "                ||\"longtext\".equals(keyName)){\n" ).append(
+                "            sql += \" and `\"+keyName +\"` = '\" + key + \"'\";\n" ).append(
+                "        }else { sql += \" and `\"+keyName +\"` = \" + key;}\n" ).append(
+                "\n" ).append(
+                "        return sql;\n" ).append(
+                "    }\n" ).append(
+                "    private String getDeleteSql(String tableName, Map<String,Object> condition, Map<String, String> field) {\n" ).append(
+                "        String sql = \"DELETE FROM \" + tableName + \" WHERE 1 = 1 \";\n" ).append(
+                "        for (Map.Entry<String, Object> entry : condition.entrySet()) {\n" ).append(
+                "            if(null==entry.getValue()||\"\".equals(entry.getValue().toString())){\n" ).append(
+                "                continue;\n" ).append(
+                "            }\n" ).append(
+                "            if (!field.containsKey(entry.getKey())){\n" ).append(
+                "                continue;\n" ).append(
+                "            }\n" ).append(
+                "            if(\"varchar\".equals(field.get(entry.getKey()))\n" ).append(
+                "                    ||\"date\".equals(field.get(entry.getKey()))\n" ).append(
+                "                    || \"datetime\".equals(field.get(entry.getKey()))\n" ).append(
+                "                    || \"char\".equals(field.get(entry.getKey()))\n" ).append(
+                "                    ||\"text\".equals(field.get(entry.getKey()))\n" ).append(
+                "                    ||\"longtext\".equals(field.get(entry.getKey()))){\n" ).append(
+                "                sql = sql + \"\\n and `\" + entry.getKey()+ \"` = '\" + entry.getValue().toString() + \" ' \";\n" ).append(
+                "            }else {\n" ).append(
+                "                sql = sql + \"\\n and `\" + entry.getKey()+ \"` = \" + entry.getValue().toString() + \" \";\n" ).append(
+                "            }\n" ).append(
+                "        }\n" +
+                "        return sql;\n" ).append(
+                "    }\n" ).append(
+                "\n" ).append(
+                "    private Object insert(String tableName, Invocation invocation, MappedStatement ms, Map<String,Object> map,\n" ).append(
+                "                          Map<String,String> field) throws Exception {\n" ).append(
+                "        SqlSource sqlSource =ms.getSqlSource();\n" ).append(
+                "        String sql;\n" ).append(
+                "        if (map.get(\"value\") instanceof List){\n" ).append(
                 "            List<Map> value = (List<Map>) map.get(\"value\");\n" ).append(
                 "            if (value==null||value.size()==0){\n" ).append(
                 "                throw new Exception(\"not found anyOne field about \" + tableName +\" on your input param\\n\" +\n" ).append(
                 "                        \"you can set @Param(\\\"value\\\") Map value in your method params\");\n" ).append(
                 "            }\n" ).append(
-                "            sql =  getInsertListSql(value, tableName, field);\n").append(
+                "            sql =  getInsertListSql(value, tableName, field);\n" ).append(
                 "        }else {\n" ).append(
                 "            Map<String,Object> value = (Map<String, Object>) map.get(\"value\");\n" ).append(
                 "            if (value==null||value.isEmpty()){\n" ).append(
@@ -124,13 +200,15 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "            StringBuffer valueTwo = new StringBuffer();\n" ).append(
                 "            for (Map.Entry<String, Object> entry : map.entrySet()) {\n" ).append(
                 "                if (field.containsKey(entry.getKey())){\n" ).append(
-                "                    if (entry.getValue()==null){ continue; }\n" ).append(
-                "                    if (null==keyString) { key.append(entry.getKey()).append(\",\"); }\n" ).append(
+                "                    if (entry.getValue()==null||\"\".equals(entry.getValue().toString())){ continue; }\n" ).append(
+                "\n" ).append(
+                "                    if (null==keyString) { key.append(\"`\"+entry.getKey()+\"`\").append(\",\"); }\n" ).append(
                 "                    if(\"varchar\".equals(field.get(entry.getKey()))\n" ).append(
                 "                            ||\"date\".equals(field.get(entry.getKey()))\n" ).append(
                 "                            || \"datetime\".equals(field.get(entry.getKey()))\n" ).append(
                 "                            || \"char\".equals(field.get(entry.getKey()))\n" ).append(
-                "                            ||\"text\".equals(field.get(entry.getKey()))){\n" ).append(
+                "                            ||\"text\".equals(field.get(entry.getKey()))\n" ).append(
+                "                            ||\"longtext\".equals(field.get(entry.getKey()))){\n" ).append(
                 "                        valueTwo.append(\"'\").append(entry.getValue().toString()).append(\"',\");\n" ).append(
                 "                    }else { valueTwo.append(entry.getValue().toString()).append(\",\"); }\n" ).append(
                 "                }\n" ).append(
@@ -154,11 +232,14 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "    }\n" ).append(
                 "\n" ).append(
                 "    private Object update(String tableName, Invocation invocation, MappedStatement ms, Map<String,Object> map,\n" ).append(
-                "                        Map<String,String> field) throws Exception {\n" ).append(
+                "                          Map<String,String> field) throws Exception {\n" ).append(
                 "        SqlSource sqlSource = ms.getSqlSource();\n" ).append(
                 "        Map<String,Object> value = (Map<String, Object>) map.get(\"value\");\n" ).append(
-                "        Map<String,Object> condition = (Map<String, Object>) map.get(\"condition\");\n" ).append(
-                "        if (value==null){\n").append(
+                "        Map<String,Object> condition = null;\n" ).append(
+                "        if (map.containsKey(\"condition\")){\n" ).append(
+                "            condition = (Map<String, Object>) map.get(\"condition\");\n" ).append(
+                "        }\n" ).append(
+                "        if (value==null){\n" ).append(
                 "            throw new Exception(\"not found update value\");\n" ).append(
                 "        }\n" ).append(
                 "        String updateSQL = getUpdateSql(value,condition,tableName,field);\n" ).append(
@@ -174,23 +255,33 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "\n" ).append(
                 "    private String getUpdateSql(Map<String, Object> value, Map<String, Object> condition, String tableName, Map<String, String> field) throws Exception {\n" ).append(
                 "        StringBuffer buffer = new StringBuffer();\n" ).append(
+                "\n" ).append(
                 "        buffer.append(\"UPDATE \").append(tableName).append(\" SET \");\n" ).append(
+                "\n" ).append(
                 "        for (Map.Entry<String, Object> entry : value.entrySet()) {\n" ).append(
+                "\n" ).append(
+                "            if(null==entry.getValue()||\"\".equals(entry.getValue().toString())){\n" ).append(
+                "                continue;\n" ).append(
+                "            }\n" ).append(
+                "           if (field.get(\"key\").equals(entry.getKey())){\n" ).append(
+                "               continue;\n" ).append(
+                "           }\n" ).append(
                 "            if (field.containsKey(entry.getKey())){\n" ).append(
                 "                if(\"varchar\".equals(field.get(entry.getKey()))\n" ).append(
                 "                        ||\"date\".equals(field.get(entry.getKey()))\n" ).append(
                 "                        || \"datetime\".equals(field.get(entry.getKey()))\n" ).append(
                 "                        || \"char\".equals(field.get(entry.getKey()))\n" ).append(
-                "                        ||\"text\".equals(field.get(entry.getKey()))){\n" ).append(
-                "                    buffer.append(entry.getKey()).append(\"=\").append(\"'\").append(entry.getValue().toString()).append(\"',\");\n" ).append(
+                "                        ||\"text\".equals(field.get(entry.getKey()))\n" ).append(
+                "                        || \"longtext\".equals(field.get(entry.getKey()))){\n" ).append(
+                "                    buffer.append(\"`\"+entry.getKey()+\"`\").append(\"=\").append(\"'\").append(entry.getValue().toString()).append(\"',\");\n" ).append(
                 "                }else {\n" ).append(
-                "                    buffer.append(entry.getKey()).append(\"=\").append(entry.getValue().toString()).append(\",\");\n" ).append(
+                "                    buffer.append(\"`\"+entry.getKey()+\"`\").append(\"=\").append(entry.getValue().toString()).append(\",\");\n" ).append(
                 "                }\n" ).append(
                 "            }\n" ).append(
                 "        }\n" ).append(
                 "        String one = buffer.toString().substring(0,buffer.toString().length()-1);\n" ).append(
                 "        buffer = new StringBuffer();\n" ).append(
-                "        buffer.append(\"\\nWHERE flag = 1 \");\n" ).append(
+                "        buffer.append(\"\\nWHERE 1 = 1 \");\n" ).append(
                 "        if (condition != null) {\n" ).append(
                 "            for (Map.Entry<String, Object> entry : condition.entrySet()) {\n" ).append(
                 "                if (field.containsKey(entry.getKey())) {\n" ).append(
@@ -198,7 +289,8 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "                            || \"date\".equals(field.get(entry.getKey()))\n" ).append(
                 "                            || \"datetime\".equals(field.get(entry.getKey()))\n" ).append(
                 "                            || \"char\".equals(field.get(entry.getKey()))\n" ).append(
-                "                            || \"text\".equals(field.get(entry.getKey()))) {\n" ).append(
+                "                            || \"text\".equals(field.get(entry.getKey()))\n" ).append(
+                "                            || \"longtext\".equals(field.get(entry.getKey()))) {\n" ).append(
                 "                        buffer.append(\"\\n and \").append(entry.getKey()).append(\"=\").append(\"'\").append(entry.getValue().toString()).append(\"'\\n\");\n" ).append(
                 "                    } else {\n" ).append(
                 "                        buffer.append(\"\\n and \").append(entry.getKey()).append(\"=\").append(entry.getValue().toString()).append(\"\\n\");\n" ).append(
@@ -211,33 +303,49 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "                        \"or set PRIMARY KEY in your methods params @Param(\\\"value\\\")\\n\" +\n" ).append(
                 "                        \"or you can coding sql in your mapperXml\");\n" ).append(
                 "            }\n" ).append(
-                "            buffer.append(\"and\").append(field.get(\"key\")).append(\"=\").append(\"'\")\n" ).append(
-                "                    .append(value.get(field.get(\"key\")).toString()).append(\"'\");\n" ).append(
+                "            buffer.append(\" and \").append(field.get(\"key\")).append(\"=\").append(\"'\")\n" ).append(
+                "                    .append(value.get(field.get(\"key\")).toString()).append(\"'\\n\");\n" ).append(
                 "        }\n" ).append(
                 "        return one + buffer.toString();\n" ).append(
                 "    }\n" ).append(
                 "\n" ).append(
                 "\n" ).append(
-                "    private Map<String, String> getTable(String tableName) {\n" ).append(
-                "        String sql = \"select column_name,data_type,column_comment,column_key,column_default \" +\n").append(
+                "    private Map<String, String> getTable( String tableName) throws Exception {\n" ).append(
+                "        if (springProps==null){\n" ).append(
+                "            synchronized (lock){\n" ).append(
+                "                if (springProps==null){\n" ).append(
+                "                    springProps = (SpringProps) Application.CONTEXT.getBean(\"springProps\");\n" ).append(
+                "                }\n" ).append(
+                "            }\n" ).append(
+                "        }\n" ).append(
+                "        Map<String,String> dataSource = springProps.getDatasource();\n" ).append(
+                "\n" ).append(
+                "        dataSource.put(\"dataBaseName\",dataSource.get(\"url\")\n" ).append(
+                "                .replaceAll(\"/+\",\"/\")\n" ).append(
+                "                .split(\"/\")[2]\n" ).append(
+                "                .replaceAll(\"\\\\?.*\",\"\"));\n" ).append(
+                "\n" ).append(
+                "        String sql = \"select column_name,data_type,column_comment,column_key,column_default \" +\n" ).append(
                 "                \"from information_schema.columns \" +\n" ).append(
                 "                \"where table_name='\"+tableName+\"' \" +\n" ).append(
+                "                \"and table_schema = '\"+dataSource.get(\"dataBaseName\")+\"' \" +\n" ).append(
                 "                \"order by ORDINAL_POSITION\";\n" ).append(
-                "\n" ).append(
+                "        System.out.println(\"\\n\");\n" ).append(
+                "        System.out.println(sql);\n" ).append(
+                "        System.out.println(\"\\n\");\n" ).append(
                 "        Connection conn = null;\n" ).append(
-                "        Statement stmt = null;\n").append(
+                "        Statement stmt = null;\n" ).append(
                 "        Map<String,String> field = new HashMap<>();\n" ).append(
                 "\n" ).append(
                 "        try {\n" ).append(
-                "            Class.forName(\"com.mysql.cj.jdbc.Driver\");\n" ).append(
-                "            conn = DriverManager.getConnection(\"jdbc:mysql://localhost:3306/"+getThisClassDefinition().getDataBase()+"?\"+\n" ).append(
-                "                            \"serverTimezone=GMT%2B8&useUnicode=true&characterEncoding=utf8&autoReconnect=true&useSSL=false\"\n" ).append(
-                "                    , \""+getThisClassDefinition().getDataBaseUserName()+"\", \""+getThisClassDefinition().getDataBasePassWord()+"\");\n" ).append(
+                "            Class.forName(dataSource.get(\"driver-class-name\"));\n" ).append(
+                "            conn = DriverManager.getConnection(dataSource.get(\"url\"),\n" ).append(
+                "                    dataSource.get(\"username\"), dataSource.get(\"password\"));\n").append(
                 "\n" ).append(
-                "            // 执行查询\n").append(
+                "            // 执行查询\n" ).append(
                 "            stmt = conn.createStatement();\n" ).append(
                 "            ResultSet rs = stmt.executeQuery(sql);\n" ).append(
-                "            while (rs.next()) {\n").append(
+                "            while (rs.next()) {\n" ).append(
                 "                if (\"PRI\".equals(rs.getString(\"column_key\"))){\n" ).append(
                 "                    field.put(\"key\",rs.getString(\"column_name\"));\n" ).append(
                 "                }\n" ).append(
@@ -256,14 +364,14 @@ public class InsertAndUpdateInterceptorClassCreator extends AbstartClassCreator 
                 "                e.printStackTrace();\n" ).append(
                 "            }\n" ).append(
                 "        }\n" ).append(
-                "        return field;\n").append(
-                "    }\n").append(
-                "\n").append(
+                "        return field;\n" ).append(
+                "    }\n" ).append(
+                "\n" ).append(
                 "}");
     }
 
     @Override
     protected void restEditCode(File file, String url, StringBuffer sb, String className, String page) {
-        deflauteEditCode(file,url,sb,className,page);
+        deflauteEditCode(file, url, sb, className, page);
     }
 }
