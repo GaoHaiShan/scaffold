@@ -2,13 +2,22 @@ package org.example.clazz.create;
 
 import org.example.clazz.ClassFactoryBean;
 import org.example.clazz.IClassCreator;
-import org.example.clazz.create.creator.*;
+import org.example.clazz.create.creator.controller.ControllerClassCreator;
+import org.example.clazz.create.creator.config.MyBatisConfingClassCreator;
+import org.example.clazz.create.creator.config.YmlConfigClassCreator;
+import org.example.clazz.create.creator.dao.BaseDaoClassCreator;
+import org.example.clazz.create.creator.dao.DaoClassCreator;
+import org.example.clazz.create.creator.interceptor.InsertAndUpdateInterceptorClassCreator;
+import org.example.clazz.create.creator.interceptor.TableCacheClassCreator;
+import org.example.clazz.create.creator.mapper.MyBatisMapperClassCreator;
+import org.example.clazz.create.creator.service.ServiceClassCreator;
+import org.example.clazz.create.creator.service.ServiceImplClassCreator;
+import org.example.clazz.create.creator.task.TaskClassCreator;
+import org.example.clazz.create.creator.until.*;
 import org.example.clazz.create.updateconfig.UpdateApplication;
 import org.example.clazz.create.updateconfig.UpdatePom;
 
 import java.io.File;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public class DefaultClassFactoryBean extends ClassFactoryBean {
     private IClassCreator startCreator;
@@ -82,6 +91,19 @@ public class DefaultClassFactoryBean extends ClassFactoryBean {
         JsonUtilClassCreator jsonUtilClassCreator= new JsonUtilClassCreator();
         jsonUtilClassCreator.setDefinition(getDefinitions());
         fileUtilClassCreator.setIClassCreator(jsonUtilClassCreator);
+
+        FilePropsClassCreator filePropsClassCreator = new FilePropsClassCreator();
+        filePropsClassCreator.setDefinition(getDefinitions());
+        jsonUtilClassCreator.setIClassCreator(filePropsClassCreator);
+
+        TaskClassCreator taskClassCreator = new TaskClassCreator();
+        taskClassCreator.setDefinition(getDefinitions());
+        filePropsClassCreator.setIClassCreator(taskClassCreator);
+
+        TableCacheClassCreator tableCacheClassCreator = new TableCacheClassCreator();
+        tableCacheClassCreator.setDefinition(getDefinitions());
+        taskClassCreator.setIClassCreator(tableCacheClassCreator);
+
         return invorkFirst();
     }
 

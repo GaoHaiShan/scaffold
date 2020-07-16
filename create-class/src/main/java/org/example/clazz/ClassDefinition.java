@@ -1,6 +1,7 @@
 package org.example.clazz;
 
 public class ClassDefinition {
+    private String startClass;
     private String pageName;
     private String className;
     private String basePath;
@@ -28,6 +29,13 @@ public class ClassDefinition {
 
     private String applicationName;
 
+    public String getStartClass() {
+        return startClass;
+    }
+
+    public void setStartClass(String startClass) {
+        this.startClass = startClass;
+    }
 
     public String getPrimaryKey() {
         return primaryKey;

@@ -52,6 +52,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "        CustomPageCreator interceptor = (CustomPageCreator) CustomPageFactory.getInstance().getObject(CreatePageStart.class);\n" +
                 "        interceptor.create(\"interceptor\");\n" +
                 "        interceptor.create(\"util\");\n" +
+                "        interceptor.create(\"task\");\n" +
                 "        CustomPageCreator mapper = (CustomPageCreator) CustomPageFactory\n" +
                 "                .getInstance()\n" +
                 "                .getObject(CreatePageStart.class.getClassLoader().getResource(\"\")\n" +
@@ -79,7 +80,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "        AbstartFactoryBean factoryBean = new DefaultClassFactoryBean();\n" +
                 "        factoryBean.isFirst(true);\n" +
                 "        factoryBean.getObject(\""+getFilePath()+"\",CreateClassStart.class.getClassLoader().getResource(\"\").getPath()\n" +
-                "                .replaceAll(\"java.*\",\"resources\")+\"/createclass.properties\");\n" +
+                "                .replaceAll(\"/java.*\",\"/resources\")+\"/createclass.properties\");\n" +
                 "    }\n" +
                 "}");
         return code.toString();
@@ -92,7 +93,7 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 FileOutputStream o = new FileOutputStream(
                         new File(
                                 getBasePath()
-                                        .replaceAll("java.*", "resources")
+                                        .replaceAll("/java.*", "/resources")
                                         + "/createclass.properties"
                         )
                 )
@@ -112,6 +113,8 @@ public class QuickStartFactory extends AbstartFactoryBean {
                 "package.dataBase=\n" +
                 "#原始路径\n" +
                 "package.basePath=" + getBasePath() + "\n" +
+                "#start class 启动类\n" +
+                "package.startClass=" +getFilePath()+"\n"+
                 "#表名\n" +
                 "package.tableName=\n" +
                 "package.primaryKey=\n" +
