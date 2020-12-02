@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.haishan.dao.ISqlCreatorDao">
+    <!--查询条件  like 用 $ 其他用 # 例如下面模板-->
+       <select id="querySqlCreator" resultType="map">
+           select * from test
+           where flag = 1
+           <if test="param.condition!=null">
+               and test = '#{param.condition}'
+           </if>
+       </select>
+</mapper>
